@@ -1,6 +1,7 @@
 const axios = require('axios')
 const tunnel = require('tunnel')
 const SocksProxyAgent = require('socks-proxy-agent')
+const HttpsProxyAgent = require('https-proxy-agent')
 
 /**
  * @param appConfig 必填
@@ -18,22 +19,9 @@ function create (appConfig) {
       appConfig.hasOwnProperty('proxyHost') && appConfig.hasOwnProperty('proxyPort')) {
       const {proxy, proxyType, proxyHost, proxyPort} = appConfig
       if (proxy) {
-        const timeout = config.timeout
         proxyURL = `${proxyType}://${proxyHost}:${proxyPort}`
-        const proxyAgent = proxyType.startsWith('socks') ? new SocksProxyAgent({
-          protocol: `${proxyType}:`,
-          hostname: proxyHost,
-          port: proxyPort,
-          timeout: timeout
-        }) : tunnel.httpsOverHttp({
-          timeout: timeout,
-          proxy: {
-            host: proxyHost,
-            port: proxyPort
-          }
-        })
-        config.httpAgent = proxyAgent
-        config.httpsAgent = proxyAgent
+        config.proxy = false
+        config.httpsAgent = new HttpsProxyAgent(proxyURL)
       }
     }
     const headers = config.headers
